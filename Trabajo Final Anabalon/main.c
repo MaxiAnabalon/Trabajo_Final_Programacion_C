@@ -64,7 +64,11 @@ void reglasLeyenda();
 ///Consultar PuntajeHistorico
 void consultarPuntajeHistorico(struct Jugador p[], int cant);
 ///Pregunta desempate
-void preguntaDesenpate(struct Jugador p[], int cant);
+void preguntaDesenpate(struct Jugador p[], int cant, int pMax);
+///Indice de Quien gano
+int quienGano(struct Jugador p[], int cant);
+///Mostrar quien gano y los puntos de todos
+void mostrarPuntosyGanador(struct Jugador p[], int cant);
 
 
 int main()
@@ -106,8 +110,8 @@ int main()
     system ("CLS");
     //hace las preguntas
     hacerpreguntas(preguntasUno, tampre, jugadores, cant);
-
-    preguntaDesenpate(jugadores, cant);
+    //Muestra los ganadores y si hace la pregunta desempate
+    mostrarPuntosyGanador(jugadores, cant);
 
     //printf("\nPuntaje Historicos: %d \n", jugadores[0].puntosHistorico);
 
@@ -314,7 +318,7 @@ int main() {
 void consultarPuntajeHistorico(struct Jugador p[], int cant){
 
     int consul;
-    printf("\nPara consultar Historial de puntos presiones 1, si desea seguir cualquier caracter: ");
+    printf("\nPara consultar Historial de puntos presiones 1, si desea seguir ingrese cualquier otro numero: ");
     scanf("%d",& consul);
     if(consul == 1){
         for(int i=0; i < cant; i++){
@@ -326,49 +330,69 @@ void consultarPuntajeHistorico(struct Jugador p[], int cant){
     }
 }
 
-void preguntaDesenpate(struct Jugador p[], int cant){
+void preguntaDesenpate(struct Jugador p[], int cant, int pMax){
 
-    for(int i=0; i<(cant-1); i++){
-        for(int j=(i+1); j<(cant); j++){
-
+    //for(int i=0; i<(cant-1); i++){
+        //for(int j=(i+1); j<cant; j++)
+        for(int i=0; i<cant; i++){
             int a= rand() % 90 + 10;
             int b= rand() % 90 + 10;
             float numReferencia = (a+b)/2;
             int resUno=0;
             int resDos=0;
-
-            if(p[i].puntos == p[j].puntos){
-                printf("\nPregunta desempate entre jugador %s y %s,  la SUMA de A + B DIVIDIDO 2 por aproximacion",p[i].nombre,p[j].nombre);
-
+            if(i != pMax){
+            if(p[pMax].puntos == p[i].puntos){
+                printf("\nPregunta desempate entre jugador %s y %s,  la SUMA de A + B DIVIDIDO 2 por aproximacion",p[pMax].nombre,p[i].nombre);
                 printf("\nNumero A = %d", a);
                 printf("\nNumero B = %d", b);
-
                 printf("\n¡Cual es el resultado?");
-
-                printf("\nTurno de %s: ",p[i].nombre);
+                printf("\nTurno de %s: ",p[pMax].nombre);
                 scanf("%d", & resUno);
-
-                printf("\nTurno de %s: ",p[j].nombre);
+                printf("\nTurno de %s: ",p[i].nombre);
                 scanf("%d", & resDos);
-
 
             int diferenciaUno = abs(resUno - numReferencia);
             int diferenciaDos = abs(resDos - numReferencia);
-
                 if (diferenciaUno < diferenciaDos) {
-                    printf("\nGANO!!! [ %s ] esta mas cerca del resultado correcto.\n", p[i].nombre);
+                    printf("\nGANO!!! [ %s ] esta mas cerca del resultado correcto.\n", p[pMax].nombre);
+                    p[pMax].puntos = p[pMax].puntos + 10;
+                    p[pMax].puntosHistorico = p[pMax].puntosHistorico + 10;
 
-                    p[i].puntos = p[i].puntos + 10;
                 } else if (diferenciaDos < diferenciaUno) {
-                    printf("\nGANO!!! [ %s ] esta mas cerca del resultado correcto.\n", p[j].nombre);
-                    p[j].puntos = p[j].puntos + 10;
+                    printf("\nGANO!!! [ %s ] esta mas cerca del resultado correcto.\n", p[i].nombre);
+                    p[i].puntos = p[i].puntos + 10;
+                    p[i].puntosHistorico = p[i].puntosHistorico + 10;
                 } else {
                     printf("\nAmbos jugadores estan a la misma distancia del resultado correcto. Es un empate, de nuevo la pregunta\n");
-                    preguntaDesenpate(p ,cant);
+                    //preguntaDesenpate(p ,cant, pMax);
                 }
+}}}}
 
-                }
-            }
+int quienGano(struct Jugador p[], int cant){
+
+    int maximo = p[0].puntos;
+    int pGanador=0;
+    for (int i=0; i<cant; i++){
+        if (p[i].puntos > maximo){
+            maximo = p[i].puntos;
+            pGanador = i;
         }
+    }
+    return pGanador;
 }
+
+void mostrarPuntosyGanador(struct Jugador p[], int cant){
+
+    int ganador = quienGano(p, cant);
+    preguntaDesenpate(p, cant, ganador);
+    ganador = quienGano(p, cant);
+
+    printf("\n\n°°° EL GANADOR ES [[[ %s ]]] FELICITACIONES !!!, con un total de puntos: [%d] °°°\n\n", p[ganador].nombre, p[ganador].puntos);
+    for (int i=0; i<cant; i++){
+        if(i != ganador){
+            printf("\nJugador [%s] acomulo [%d] puntos\n",p[i].nombre, p[i].puntos);
+        }}
+}
+
+
 
