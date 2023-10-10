@@ -40,6 +40,14 @@ void cargarJugadores(struct Jugador j[], int t);
 ///Muestra los jugadores (2 o 4) que contenga el vector de la struct Jugadores
 void mostrarJugadores(struct Jugador j[], int t);
 
+/////////cargar preguntas y respuestas desde archivos////////
+void cargarPreguntasDesdeArchivo(struct Pregunta p[]);
+void cargarRespuestasDesdeArchivo(struct Respuesta r[]);
+struct Pregunta cargarRespuestasDesdeArchivoPrueba(struct Pregunta p);
+void asociarPreguntasRespuesatas(struct Pregunta p[], int tam, struct Respuesta r[], int tamRes);
+int contarReglonesArchivo(char nombreArchivo[]);
+
+
 /////////Cargar, mostrar preguntas y respuestas Generales//////////////////////////////
 ///Funcion cargar Preguntas
 struct Pregunta cargarPreguntaParametro(int nPre,char pre[100],int posRes,int nRes,char res[100],int nPreRef,int c);
@@ -78,33 +86,17 @@ int main()
     do{
     system ("CLS");
     reglasLeyenda();
-    int tampre = 4;
+    int tampre = 10;
+    tampre=contarReglonesArchivo("preguntas.txt");
+    printf("%d\n",tampre);
     int cant = elegircantidadjugadores();
     struct Jugador jugadores[cant];
     cargarJugadores(jugadores, cant);
     mostrarJugadores(jugadores, cant);
     struct Pregunta preguntasUno[tampre];
-
-    //carga y muestra las preguntas
-    cargarPreguntasporParametro(preguntasUno, 0, 1, "!Que seleccion salio campeon del mundo en 2022?", 0, 1, "Turquia", 1, 0);
-    cargarPreguntasporParametro(preguntasUno, 0, 1, "!Que seleccion salio campeon del mundo en 2022?", 1, 2, "Francia" , 1, 0);
-    cargarPreguntasporParametro(preguntasUno, 0, 1, "!Que seleccion salio campeon del mundo en 2022?", 2, 3, "Brasil", 1, 0);
-    cargarPreguntasporParametro(preguntasUno, 0, 1, "!Que seleccion salio campeon del mundo en 2022?", 3, 4, "Argentina"  , 1, 1);
-
-    cargarPreguntasporParametro(preguntasUno, 1, 2, "!Cuanto mide el obelisco?", 0, 1, "20", 2, 0);
-    cargarPreguntasporParametro(preguntasUno, 1, 2, "!Cuanto mide el obelisco?", 1, 2, "68", 2, 1);
-    cargarPreguntasporParametro(preguntasUno, 1, 2, "!Cuanto mide el obelisco?", 2, 3, "100", 2, 0);
-    cargarPreguntasporParametro(preguntasUno, 1, 2, "!Cuanto mide el obelisco?", 3, 4, "35", 2, 0);
-
-    cargarPreguntasporParametro(preguntasUno, 2, 3, "!Cual es la avenida mas ancha del mundo?", 0, 1, "av. Alen", 3, 0);
-    cargarPreguntasporParametro(preguntasUno, 2, 3, "!Cual es la avenida mas ancha del mundo?", 1, 2, "9 de Julio", 3, 1);
-    cargarPreguntasporParametro(preguntasUno, 2, 3, "!Cual es la avenida mas ancha del mundo?", 2, 3, "Ing. Huergo", 3, 0);
-    cargarPreguntasporParametro(preguntasUno, 2, 3, "!Cual es la avenida mas ancha del mundo?", 3, 4, "av. Constitucion", 3, 0);
-
-    cargarPreguntasporParametro(preguntasUno, 3, 4, "!Que anio fue la revolucion de Mayo?", 0, 1, "1780", 4, 0);
-    cargarPreguntasporParametro(preguntasUno, 3, 4, "!Que anio fue la revolucion de Mayo?", 1, 2, "1880", 4, 0);
-    cargarPreguntasporParametro(preguntasUno, 3, 4, "!Que anio fue la revolucion de Mayo?", 2, 3, "1810", 4, 1);
-    cargarPreguntasporParametro(preguntasUno, 3, 4, "!Que anio fue la revolucion de Mayo?", 3, 4, "1812", 4, 0);
+    cargarPreguntasDesdeArchivo(preguntasUno);
+    mostrarArraysPreguntas(preguntasUno, tampre);
+    system("pause");
     printf("\n******  EN 3 SEGUNDOS EMPIEZA EL JUEGO  ******\n");
     sleep (3);
     system ("CLS");
@@ -112,12 +104,7 @@ int main()
     hacerpreguntas(preguntasUno, tampre, jugadores, cant);
     //Muestra los ganadores y si hace la pregunta desempate
     mostrarPuntosyGanador(jugadores, cant);
-
-    //printf("\nPuntaje Historicos: %d \n", jugadores[0].puntosHistorico);
-
-    //printf("\nPuntaje Historicos: %d \n", jugadores[1].puntosHistorico);
     consultarPuntajeHistorico(jugadores, cant);
-
     printf("\nSi quieren volver a jugar? escriba 1 para reiniciar, 0 para terminar.\n");
     scanf("%d",& reini);
     }while(reini==1);
@@ -125,6 +112,7 @@ int main()
     return 0;
 
 }
+
 ///Elegir cantidad de Jugadores (2 o 4)
 int elegircantidadjugadores(){
     int  cant;
@@ -148,6 +136,8 @@ struct Jugador cargarJugador(){
 
     printf("Ingrese su DNI:\n");
     scanf("%lf", &j.DNI);
+
+    j.puntos=0;
 
     return j;
 };
@@ -253,16 +243,15 @@ void hacerpreguntas(struct Pregunta p[], int tam, struct Jugador j[],int cantJug
 
     do{
         do{alea = 0+rand()%(tam);}while(aleaDos == alea);
-
         mostrarPregunta(p[alea]);
         printf("\nJugador [[ %s ]] su turno, ingrese una repuesta (TIENE 15 SEGUNDOS): ", j[numj].nombre);
         time(&a);
         scanf("%d", & res);
         time(&b);
         seg=difftime(b, a);
-        printf("\n segundos %d\n", seg);
         x = p[alea].respuestas[res-1].correcta;
-        printf("\nUsted contesto num de respuesta: %d \n",res);
+        printf("\nUsted tardo %d segundos, y contesto num de respuesta: %d \n",seg,res);
+        sleep(2);
         for(int j=0; j<4; j++){
             if (x == 1){
                 if (x == p[alea].respuestas[j].correcta){
@@ -270,20 +259,23 @@ void hacerpreguntas(struct Pregunta p[], int tam, struct Jugador j[],int cantJug
                     if (res == rescorrecta){tru=1;}
                     else {tru=0;}}}}
         if (tru == 1){
-            if (seg<=15){
-            j[numj].puntos = j[numj].puntos + (20-seg);}
-            else{j[numj].puntos = j[numj].puntos + (1);}
-            printf("\nLa respuesta es correcta, puntos acomulados [%d] , sigue su turno\n", j[numj].puntos);
-            aleaDos = alea;
+            if (seg<=15){j[numj].puntos = j[numj].puntos + (20-seg);
+                printf("\nSuma %d puntos\n", (20-seg));
             }
+            else{j[numj].puntos = j[numj].puntos + (1);
+                printf("\nSuma 1 puntos\n");
+            }
+            printf("\nLa respuesta es correcta, puntos acomulados [%d] , sigue su turno\n", j[numj].puntos);
+            aleaDos = alea;}
         else{
             j[numj].puntosHistorico = j[numj].puntosHistorico + j[numj].puntos;
-            printf("\nPuntaje historico %d\n",j[numj].puntosHistorico);
-            printf("\nLa respuesta es incorrecta, continua otro jugador\n");
+            printf("\nPuntaje acomulado %d\n",j[numj].puntos);
+            ///printf("\nPuntaje historico %d\n",j[numj].puntosHistorico);
+            printf("\nLa respuesta es incorrecta, continua otro jugador . . .\n\n");
             numj = numj + 1;
+            system("pause");
             }
-
-        sleep (3);
+        sleep (1);
         system ("CLS");
         tru=0;
 
@@ -301,19 +293,6 @@ void reglasLeyenda(){
     printf("\n-Respuestas dentro del tiempo vale (20 puntos - segundos), pasado los 15 segundos solo vale 1 punto la respuesta correcta.");
     printf("\n-Cuando los puntos sean iguales, se hace una pregunta desempate\n");
 }
-/*
-int main() {
-
-    time_t a , b;
-    int res = 0;
-    int seg = 0;
-        time(&a);
-        res = (scanf("%d", &res));
-        time(&b);
-        seg = difftime(b, a);
-        printf("CANTIDAD DE SEGUNDOS %d\n", seg);
-    }
-*/
 
 void consultarPuntajeHistorico(struct Jugador p[], int cant){
 
@@ -332,8 +311,6 @@ void consultarPuntajeHistorico(struct Jugador p[], int cant){
 
 void preguntaDesenpate(struct Jugador p[], int cant, int pMax){
 
-    //for(int i=0; i<(cant-1); i++){
-        //for(int j=(i+1); j<cant; j++)
         for(int i=0; i<cant; i++){
             int a= rand() % 90 + 10;
             int b= rand() % 90 + 10;
@@ -395,4 +372,145 @@ void mostrarPuntosyGanador(struct Jugador p[], int cant){
 }
 
 
+
+void cargarPreguntasDesdeArchivo(struct Pregunta p[]) {
+
+    FILE *archivo;
+
+    archivo = fopen("preguntas.txt", "r");
+
+    if (archivo == NULL) {
+        printf("No se pudo abrir el archivo.\n");
+        exit(1);
+    }
+
+    int pos = 0;
+
+    while (!feof(archivo)) {
+
+        fscanf(archivo, "%d; \"%99[^\"]\";\n",&p[pos].numPregunta, p[pos].pregunta);
+        p[pos] = cargarRespuestasDesdeArchivoPrueba(p[pos]);
+        pos++;
+
+        }
+    fclose(archivo);
+}
+
+void cargarRespuestasDesdeArchivo(struct Respuesta r[]){
+
+    FILE *archivo;
+
+    archivo = fopen("respuestas.txt", "r");
+
+    if (archivo == NULL) {
+        printf("No se pudo abrir el archivo.\n");
+        exit(1);
+    }
+
+    int pos = 0;
+
+    while (!feof(archivo)) {
+
+        fscanf(archivo, "%d;\"%99[^\"]\";%d;%d;\n",&r[pos].numRespuesta, r[pos].respuestas, &r[pos].numPreguntaAsociada, &r[pos].correcta);
+
+        pos++;
+
+        }
+    fclose(archivo);
+
+}
+
+void asociarPreguntasRespuesatas(struct Pregunta p[], int tam, struct Respuesta r[], int tamRes){
+
+    ///int pos=0;
+
+    for ( int i = 0; i < tam; i++){
+        int pos = 0; // Restablecemos pos a 0 para cada pregunta
+
+        for ( int j = 0; j< tamRes; j++){
+
+            if (p[i].numPregunta == r[j].numPreguntaAsociada){
+
+                p[i].respuestas[pos].numRespuesta = r[j].numRespuesta;
+                strcpy( p[i].respuestas[pos].respuestas, r[j].respuestas);
+                p[i].respuestas[pos].numPreguntaAsociada = r[j].numPreguntaAsociada;
+                p[i].respuestas[pos].correcta = r[j].correcta;
+
+                printf("\n %s \n", r[j].respuestas);
+
+                pos++;
+            }
+
+        }
+    }
+}
+
+
+
+struct Pregunta cargarRespuestasDesdeArchivoPrueba(struct Pregunta p){
+
+    struct p;
+
+    FILE *archivo;
+
+    archivo = fopen("respuestas.txt", "r");
+
+    if (archivo == NULL) {
+        printf("No se pudo abrir el archivo.\n");
+        exit(1);
+    }
+
+    int pos = 0;
+
+    while (!feof(archivo)) {
+
+        int numRespue=0;
+        char respues[50];
+        int numPreguntaAsoc=0;
+        int correc=0;
+
+
+        fscanf(archivo, "%d;\"%99[^\"]\";%d;%d;\n",&numRespue, respues, &numPreguntaAsoc, &correc);
+
+        if (numPreguntaAsoc == p.numPregunta) { ///Si la respuesta pertenece a esa pregunta se acopia
+
+            p.respuestas[pos].numRespuesta = numRespue;
+            strcpy( p.respuestas[pos].respuestas, respues);
+            p.respuestas[pos].numPreguntaAsociada = numPreguntaAsoc;
+            p.respuestas[pos].correcta = correc;
+
+        pos++;
+        if (pos>3){pos=0;};
+        }
+    }
+    fclose(archivo);
+    return p;
+}
+
+int contarReglonesArchivo(char nombreArchivo[]){
+
+    FILE *archivo;
+    int contadorLineas = 0;
+    char caracter;
+
+    // Abrir el archivo en modo lectura
+    archivo = fopen(nombreArchivo, "r");
+
+    // Verificar si el archivo se abrió correctamente
+    if (archivo == NULL) {
+        printf("No se pudo abrir el archivo.\n");
+        return -1; // Código de error
+    }
+
+    // Contar las líneas en el archivo
+    while ((caracter = fgetc(archivo)) != EOF) {
+        if (caracter == '\n') {
+            contadorLineas++;
+        }
+    }
+
+    // Cerrar el archivo
+    fclose(archivo);
+    return contadorLineas;
+}
 
